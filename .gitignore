@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+*.kicad_prl
+*.kicad_sch.lck
+*.kicad_pcb.lck
+~*.lck
+*-backups/
+*.blend1

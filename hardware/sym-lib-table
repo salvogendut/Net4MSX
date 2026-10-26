@@ -1,0 +1,3 @@
+(sym_lib_table
+ (lib (name "Net4MSX")(type "KiCad")(uri "${KIPRJMOD}/Net4MSX.kicad_sym")(options "")(descr "Net4MSX interface concept symbols"))
+)
