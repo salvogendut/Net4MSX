@@ -9,7 +9,8 @@ bus, power and ROM circuitry and copper routing remain to be implemented.
 
 ## W5100S interface
 
-Net4CPC uses an indirect parallel bus with these four offsets:
+Net4CPC uses an indirect parallel bus with these four offsets, also specified in
+section 5.2 of the [W5100S datasheet v1.2.8](https://docs.wiznet.io/img/products/w5100s/w5100s-ds-v128e.pdf):
 
 | Offset | Register | Role |
 | --- | --- | --- |
@@ -20,19 +21,31 @@ Net4CPC uses an indirect parallel bus with these four offsets:
 
 Its EAGLE schematic and BOM show 74LS30/74LS32 decode logic, a 3.3 V regulator
 and alternative module footprints. Reuse the interface concept; redesign the
-decode for MSX. Confirm mode straps, reset defaults, access timing and any
-auto-increment behavior against the selected module and chip documentation.
+decode for MSX. The W5100S fixes indirect mode and auto-increment on; see the
+[vendor integration notes](W5100S.md#host-access-and-hardware-review). Confirm the
+module's straps and reset circuit, and qualify the bus timing on the prototype.
 
 The W5100S has four shared hardware sockets and 16 KiB of TX/RX storage. It
-operates at 3.3 V with documented 5 V I/O tolerance; this is a chip-level property,
-not proof that every module pin or power input accepts 5 V. It does not support
-IP fragmentation. See the [WIZnet overview](https://docs.wiznet.io/Product/Chip/Ethernet/W5100S)
-and its linked datasheet and errata.
+operates at 3.3 V; WIZnet advertises 5 V I/O tolerance, but the
+[voltage-rating discrepancy](W5100S.md#host-access-and-hardware-review) needs
+resolution before approving direct MSX drive. No module power-input rating follows
+from that claim. It does not support IP fragmentation. See the
+[WIZnet overview](https://docs.wiznet.io/Product/Chip/Ethernet/W5100S).
+
+The [SPI read erratum](W5100S.md#spi-read-erratum) is a requirement for the Pico
+transport study. Qualify first-byte and inter-byte timing, including burst/DMA
+transfers, before accepting register-access reliability.
 
 The original Pico's RP2040 requires a 3.3 V GPIO design; provide appropriate
 translation from the MSX bus. Validate output thresholds in the reverse
 direction and output-enable sequencing. Consult the
 [RP2040 electrical specifications](https://datasheets.raspberrypi.com/rp2040/rp2040-datasheet.pdf).
+
+The [mailbox proposal](MAILBOX-PROTOCOL.md#bus-contract) requires two 16-byte
+hardware FIFOs and eight host register offsets. Its [GPIO budget](RESOURCE-BUDGET.md#gpio-and-hardware-cost)
+uses 22 of the original Pico's 26 exposed GPIO, assuming external decode/FIFO
+logic. That logic, translation, ROM and reset gating are additional circuitry;
+the present pin map and CAD have not been changed to implement the proposal.
 
 ## Cartridge connector reference
 
@@ -90,6 +103,9 @@ The new cartridge must gate its own ROM and peripheral accesses explicitly.
 - Measure data setup/hold, read access, write pulses and bus release at the
   intended CPU speed. Validate any wait-state circuit rather than relying on
   firmware latency assumptions.
+- Apply the recorded WIZnet datasheet/errata baseline to reset, interface timing
+  and module review. Resolve electrical ambiguities and capture register-access
+  evidence before freezing the circuit; see [W5100S integration](W5100S.md).
 - Specify ROM visibility, peripheral window, workspace storage, write protection
   and boot recovery. Include coexistence with expanded slots in the review.
 - Derive the edge footprint and board outline from Gerbers plus measurements;

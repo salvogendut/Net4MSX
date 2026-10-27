@@ -42,6 +42,10 @@ and Pico 3.3 V rails are separate; their regulator outputs are not tied together
 Pico signal numbering follows the
 [official Pico pinout](https://datasheets.raspberrypi.com/pico/Pico-R3-A4-Pinout.pdf).
 
+The [W5100S integration notes](../docs/W5100S.md) record the vendor baseline,
+mode-strap review and SPI read erratum. These requirements still need validation
+on the user's module; the concept wiring and footprint are provisional.
+
 The carrier envelope is a **proposed 80 × 90 mm**, 1.6 mm board with a
 65.44 mm contact tongue. It is not a measured replacement for the diagnostic
 cartridge shell. The 25-per-side contact pitch and approximate contact geometry

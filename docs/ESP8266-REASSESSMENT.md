@@ -22,7 +22,7 @@ no existing firmware or qualified hardware needs to be discarded.
 | `SendResponse` and `CUSTOM_F_RETRY_TX` replay the last response | Distinguish retrieving a lost response from re-executing a send/open/close command |
 | Header defines a 2148-byte command buffer; README requires a 2 KiB receive buffer or a sufficiently fast host | Size the complete path for the slowest consumer, or chunk transfers; do not assume a stock MSX can drain a stream continuously |
 | Capability code reports four shared connections | Reuse the accounting concept, with W5100S DNS/DHCP reservations added explicitly |
-| README links separate ROM and RAM Z80 drivers | Inspect those before choosing a driver baseline; this repository alone does not provide cartridge discovery code |
+| README links separate ROM and RAM Z80 drivers | Now pinned and reviewed in [Software review](SOFTWARE-REVIEW.md); their integration patterns need transport, API and licensing review before reuse |
 
 ## Behaviors that must not be copied unchanged
 
@@ -30,10 +30,10 @@ no existing firmware or qualified hardware needs to be discarded.
   facilities. A Pico/W5100S backend needs its own driver and services; this is
   an architectural reference, not a compilable Pico port.
 - Documentation explicitly describes blocking DNS and no firmware `DNS_S`
-  command, with results cached by the host driver. Its capability implementation
-  includes blocking/TLS feature bits beyond the pinned 1.1 baseline. Preserve
-  our asynchronous 1.1 contract, or deliberately review and adopt a newer
-  specification before advertising different semantics.
+  command, with results cached by the host driver. TCP/IP UNAPI 1.1 permits
+  advertised blocking DNS/TCP-open and TLS; the earlier assessment incorrectly
+  placed those features beyond 1.1. Net4MSX prefers asynchronous DNS and defers
+  TLS as project choices. See the [source-backed correction](SOFTWARE-REVIEW.md#correction-to-the-earlier-unapi-assessment).
 - `TCPIP_DNS_Q_NEW=206` is a private transport command, not a replacement for
   public UNAPI function 6. Function 0, discovery, unsupported functions and
   `TCPIP_WAIT` still need host-side behavior.
@@ -51,6 +51,11 @@ no existing firmware or qualified hardware needs to be discarded.
   or expiration, including while background services run.
 
 ## Revised proof of concept
+
+The [companion-driver and ioLibrary review](SOFTWARE-REVIEW.md) completes the
+initial source inspection. It finds useful discovery, workspace and replay
+patterns, plus backend register/ring code, but no complete bounded transport or
+service implementation ready for Net4MSX.
 
 First implement or simulate one bounded request/response transaction, version and
 capability negotiation, a TCP send/receive exchange and DNS start/status. Measure

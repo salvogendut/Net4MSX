@@ -6,10 +6,12 @@ conventions and hook chaining; see [References](REFERENCES.md).
 
 The ESP8266 firmware adds a concrete host/coprocessor reference; see
 [Reassessment](ESP8266-REASSESSMENT.md). Evaluate its companion Z80 drivers before
-writing the front end from scratch. Keep their transport conventions separate
-from the public API and do not inherit blocking DNS, TLS flags or private command
-206 under our pinned 1.1 contract. The function coverage below applies to the
-combined Z80/Pico implementation if that architecture is selected.
+selecting a front-end baseline; the [pinned review](SOFTWARE-REVIEW.md) records
+their useful patterns and adaptation needs. Keep private command 206 separate
+from the public API. TCP/IP UNAPI 1.1 permits advertised blocking DNS/TCP-open and
+TLS, but Net4MSX currently chooses asynchronous DNS and defers TLS. Capability
+flags must reflect the implementation. The function coverage below applies to
+the combined Z80/Pico implementation if that architecture is selected.
 
 ## Discovery and ABI
 
@@ -52,10 +54,19 @@ unconditionally return `ERR_NOT_IMP`; consult the per-parameter requirements.
 ## Socket and service model
 
 The four hardware sockets form a shared pool, not four TCP plus four UDP
-connections. DNS/DHCP may need internal UDP resources. Choose and document
-reservation or arbitration before reporting connection counts. UNAPI handles
-must be validated and mapped to owned sockets; reopening must not expose stale
-state or leak resources.
+connections. The [prototype proposal](MAILBOX-PROTOCOL.md) reserves hardware
+socket 3 for serialized DNS/DHCP, leaving three application sockets shared by
+TCP and UDP. With both protocols implemented, report maximum TCP/UDP counts of
+three, equal free counts from that shared pool, and zero raw-IP counts because
+raw IP is unsupported. Set the shared-pool feature flag. Internal service work
+must not evict application sockets. UNAPI handles must be validated and mapped
+to owned sockets; reopening must not expose stale state or leak resources.
+
+Define TX/RX allocation alongside socket ownership using the
+[W5100S buffer and transfer requirements](W5100S.md). Translate hardware receive
+records, command completion and interrupt state into the public ABI; vendor
+socket examples are not UNAPI implementations. Review the separate socket-less
+ARP/PING engine before making an ICMP capability claim.
 
 DNS and DHCP require software even with hardware TCP/IP offload. Define timeouts,
 retries, cancellation and DHCP lease renewal. `TCPIP_WAIT` may be a no-op only
@@ -68,6 +79,13 @@ close versus abort, send capacity, RX ring wrap, zero-length datagrams and
 receive truncation according to the specification. Report datagram limits and
 fragmentation capabilities that the implementation actually supports.
 
+The draft allocates 2 KiB TX/RX per socket, a 1,500-byte IP datagram limit and a
+1,472-byte maximum UDP payload. TCP sends accept the entire requested buffer or
+return `ERR_BUFFER` without partial enqueue. UDP receive returns the original
+datagram length even when it copies fewer bytes and discards the remainder.
+These limits and zero-length behavior require implementation tests before they
+can be advertised. See the [mailbox semantic rules](MAILBOX-PROTOCOL.md#network-semantics-and-bounded-progress).
+
 ## Verification
 
 Use the reference `APILIST`, TCP/IP utility sources and example consumers to
@@ -75,6 +93,8 @@ check discovery and capability reporting. Add driver tests for register ordering
 ring wrap, socket exhaustion, invalid handles, errors and reset cleanup once the
 implementation exists. Test real UNAPI clients against controlled TCP/UDP/DNS
 services, including cable removal, unavailable peers and repeated open/close.
+Include UDP header/payload wrap and truncation followed by another datagram,
+plus pending receive work when an interrupt flag has already been acknowledged.
 An emulator can validate ROM integration, but cannot establish physical bus
 timing or real W5100S interoperability without the corresponding hardware model.
 

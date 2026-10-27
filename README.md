@@ -21,12 +21,18 @@ remain to be developed.
 
 - [Architecture and decisions](docs/ARCHITECTURE.md)
 - [Hardware requirements and cartridge pinout](docs/HARDWARE.md)
+- [W5100S vendor documentation and integration requirements](docs/W5100S.md)
 - [UNAPI implementation scope](docs/UNAPI.md)
 - [Development roadmap and acceptance criteria](docs/ROADMAP.md)
 - [Reference repositories and provenance](docs/REFERENCES.md)
 - [ESP8266 firmware reassessment](docs/ESP8266-REASSESSMENT.md)
+- [Pinned Z80 driver and ioLibrary review](docs/SOFTWARE-REVIEW.md)
+- [MSX–Pico mailbox protocol proposal](docs/MAILBOX-PROTOCOL.md)
+- [Pico and direct-parallel resource budgets](docs/RESOURCE-BUDGET.md)
 - [KiCad concept and 3D mockup](hardware/README.md)
 
-The first milestone is to select the module and MSX register mapping, then prove
-reliable register access on a prototype. No assembler, firmware SDK, or build
-commands have been selected yet.
+The next software step is to model and test the proposed mailbox with a fake
+socket backend, then measure a minimal Z80/Pico build. Module selection, MSX
+register mapping and reliable bus/register access on a physical prototype remain
+hardware gates. No assembler, firmware SDK, or build commands have been selected
+yet; the resource budgets are design allocations, not measured firmware sizes.

@@ -29,13 +29,21 @@ implement an MSX API.
 | Pico as a transparent register bridge | Programmable bus transport | GPIO budget, translation, deterministic response; services still run on Z80 |
 | Pico as a command coprocessor owning W5100S | Small Z80 front end; DNS/DHCP and socket state in MCU RAM, following the ESP8266 reference | Bounded mailbox/FIFO interface, protocol, W5100S backend, reset/replay and firmware recovery |
 
-The command-coprocessor option now merits the first software feasibility study,
-following [the ESP8266 reassessment](ESP8266-REASSESSMENT.md). Direct parallel is
-the hardware simplicity comparison; neither architecture is frozen. A Pico
+The command-coprocessor option is recommended for the first software prototype,
+following [the ESP8266 reassessment](ESP8266-REASSESSMENT.md) and the
+[resource comparison](RESOURCE-BUDGET.md). Direct parallel remains the hardware
+simplicity comparison; neither architecture is frozen. A Pico
 register bridge and a Pico that owns sockets are different software designs.
 A Pico connected over SPI cannot be assumed to finish each transaction within
 an MSX read cycle; buffering, handshaking or validated wait-state logic is needed.
 Keep outputs disabled until the interface is ready after power-on or reset.
+
+The [W5100S integration notes](W5100S.md) add vendor constraints to both candidates,
+including the SPI read erratum. Evaluate WIZnet's ioLibrary as a possible Pico
+backend. The [pinned software review](SOFTWARE-REVIEW.md) identifies reusable
+driver layers and required changes to timing, blocking behavior and API semantics;
+the [resource budget](RESOURCE-BUDGET.md) now compares ROM, RAM, GPIO, bus glue
+and transfer costs. Its allocations still require linked builds and measurements.
 
 ```mermaid
 flowchart LR
@@ -48,6 +56,9 @@ flowchart LR
 The command path uses short mailbox accesses and polled completion. Never hold
 an MSX bus cycle while waiting for DNS, a TCP peer or a complete SPI transaction.
 UNAPI ABI compliance belongs to the combined host/firmware implementation.
+The [draft mailbox protocol](MAILBOX-PROTOCOL.md) defines eight relative register
+offsets, two 16-byte hardware FIFOs, bounded whole-call frames, retained replies
+and reset invalidation. It requires interface circuitry absent from the concept.
 
 ## Bus mapping decision
 
@@ -61,6 +72,8 @@ Compare these options before assigning public addresses:
 
 For the command-coprocessor option, map mailbox/status/data registers instead of
 assuming the four W5100S indirect registers remain the host interface.
+The draft favors a slot-selected memory window for the prototype; its base
+address and decoder remain unassigned.
 
 For the memory option, ROM and peripheral read enables must be mutually
 exclusive. For the I/O option, do not assume `/SLTSL` selects an I/O transaction.
@@ -80,13 +93,18 @@ W5100S socket/register state during normal operation. Do not expose concurrent
 raw register access that bypasses its allocation and synchronization.
 
 Serialize indirect address/data sequences against other callers and interrupt
-handlers. Decide how much work can run from a timer hook and how `TCPIP_WAIT`
-advances software services without blocking indefinitely.
+handlers. The Pico draft uses one mailbox caller and autonomous MCU service
+progress, allowing a local `TCPIP_WAIT` once that independence is proven. Direct
+parallel still needs a bounded timer/WAIT service design. Neither path may rely
+on an interrupt-driven counter as its only escape from a polling loop.
 
 A ROM provider is the intended cartridge experience. A RAM-loaded diagnostic or
 development provider may precede it. ROM sizing, bank switching and persistent
 configuration are open decisions; page-3 workspace must be allocated without
-corrupting BASIC, DOS or another extension's hooks.
+corrupting BASIC, DOS or another extension's hooks. Initial allocation targets
+are a 16 KiB ROM for either candidate, 512 bytes of new host workspace for the
+Pico front end, and 4 KiB (static IP/DNS) or 6 KiB (including DHCP) for direct
+parallel. These are build acceptance targets, not established requirements.
 
 ## Scope boundaries
 
