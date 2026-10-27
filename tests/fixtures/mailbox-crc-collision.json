@@ -1,0 +1,6 @@
+{
+  "description": "Distinct eight-byte TCP payloads with the same CRC contribution; compare request bytes, not just CRC.",
+  "first_data": "4141414141414141",
+  "second_data": "424242428f5296e3",
+  "session_1_sequence_1_handle_1_frame_crc": "36d56753"
+}

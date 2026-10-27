@@ -2,7 +2,9 @@
 
 Draft 1, 2026-10-27. This specifies the first command-coprocessor prototype; it
 does not select the final cartridge architecture or allocate an MSX address.
-There is no implementation yet. Compare its costs with direct parallel access
+A [host-side model](MAILBOX-MODEL.md) now exercises the logical transport and
+selected TCP/UDP semantics; firmware and interface circuitry are not implemented.
+Compare its costs with direct parallel access
 in [Resource budgets](RESOURCE-BUDGET.md), and its source adaptation requirements
 in [Software review](SOFTWARE-REVIEW.md).
 
@@ -244,11 +246,13 @@ includes FIFO flushing and backend quiescence before another handshake.
 7. Reading the final reply byte is not an ACK. After validating the entire
    response and completing its caller-memory copy, the host sends ACK. The Pico
    releases request/reply storage, records the last acknowledged sequence and
-   advances the expected sequence. The host waits for reply-retained to clear
+   advances the expected sequence. Flush any unread RX FIFO tail at this point,
+   so it cannot prefix the next response. The host waits for reply-retained to clear
    before issuing a new request.
 8. An exact duplicate of the last ACK is harmless, even after another request
    starts. Remember its opcode too. An older request is rejected, not replayed
-   after its reply storage has been released. Any future or unrelated sequence
+   after its reply storage has been released. A repeated ACK must not flush or
+   move the current reply cursor. Any future or unrelated sequence
    faults. Reset before sequence `FFFFFFFFh`; there is no sequence rollover.
 
 ACKs use the TX FIFO, independently of a full RX FIFO. A partial/corrupt ACK
@@ -390,8 +394,10 @@ Before choosing this architecture, demonstrate:
   unavailable peers, a stuck chip register and host waits with timer progress
   stopped. Record API results and maximum observed latency separately.
 
-First build a host-side protocol/state-machine model with a fake backend, then
-qualify the MSX bus and Pico/W5100S timing on hardware. A model can verify replay
-and bounds; it cannot establish electrical timing or actual firmware size.
+The [host-side model and coverage report](MAILBOX-MODEL.md) now exercise the
+transport cases and selected TCP/UDP semantics. DNS/DHCP, the full public ABI
+and all hardware-dependent cases above remain open. Qualify the MSX bus and
+Pico/W5100S timing on hardware; model results do not establish electrical timing
+or actual firmware size.
 
 [unapi]: https://github.com/salvogendut/MSX-UNAPI-specification/blob/eb7e978c4c2133bf5d31a470281940f5ee44c4f5/docs/TCP-IP%20UNAPI%20specification.md

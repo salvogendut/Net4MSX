@@ -28,11 +28,18 @@ remain to be developed.
 - [ESP8266 firmware reassessment](docs/ESP8266-REASSESSMENT.md)
 - [Pinned Z80 driver and ioLibrary review](docs/SOFTWARE-REVIEW.md)
 - [MSX–Pico mailbox protocol proposal](docs/MAILBOX-PROTOCOL.md)
+- [Executable mailbox model and conformance tests](docs/MAILBOX-MODEL.md)
 - [Pico and direct-parallel resource budgets](docs/RESOURCE-BUDGET.md)
 - [KiCad concept and 3D mockup](hardware/README.md)
 
-The next software step is to model and test the proposed mailbox with a fake
-socket backend, then measure a minimal Z80/Pico build. Module selection, MSX
-register mapping and reliable bus/register access on a physical prototype remain
-hardware gates. No assembler, firmware SDK, or build commands have been selected
-yet; the resource budgets are design allocations, not measured firmware sizes.
+The mailbox now has a host-side Python model and fake-backend conformance tests:
+
+```sh
+python3 -m unittest discover -s tests -v
+```
+
+The next software step is a reproducible minimal Z80/Pico build with measured
+ROM/RAM use. Module selection, MSX register mapping and reliable bus/register
+access on a physical prototype remain hardware gates. No assembler or firmware
+SDK has been selected yet; the resource budgets are design allocations, not
+measured firmware sizes. The model uses Python 3.10+ and the standard library.

@@ -59,6 +59,9 @@ UNAPI ABI compliance belongs to the combined host/firmware implementation.
 The [draft mailbox protocol](MAILBOX-PROTOCOL.md) defines eight relative register
 offsets, two 16-byte hardware FIFOs, bounded whole-call frames, retained replies
 and reset invalidation. It requires interface circuitry absent from the concept.
+The [executable model](MAILBOX-MODEL.md) tests those transport rules and selected
+TCP/UDP semantics with a fake backend. It supplies fixtures for the firmware
+prototype; it does not qualify the bus circuit or the full UNAPI implementation.
 
 ## Bus mapping decision
 

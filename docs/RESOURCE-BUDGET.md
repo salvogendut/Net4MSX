@@ -212,11 +212,11 @@ network peer latency and actual TCP/UDP throughput.
 | Services | Autonomous DNS/DHCP progress during host pauses | Bounded timer/WAIT scheduling without hook or caller-memory corruption |
 | Cartridge cost | Actual interface BOM, power and enclosure fit | Actual decode/buffering/possible ROM-banking BOM, power and fit |
 
-The next concrete step is a **protocol model and conformance fixtures with a
-fake socket backend**. Prove bounded storage, one execution under retries,
-atomic TCP enqueue and whole-datagram UDP consumption before committing to
-mailbox circuitry. Then build a reproducible minimal Z80 front end and Pico
-backend to replace these allocations with measured maps. Revisit direct parallel
+The [protocol model and conformance fixtures](MAILBOX-MODEL.md) now exercise
+bounded logical storage, one execution under retries, atomic TCP enqueue and
+whole-datagram UDP consumption with a fake backend. Next, build a reproducible
+minimal Z80 front end and Pico backend to replace these allocations with
+measured maps. Revisit direct parallel
 if mailbox electrical complexity, ROM fit or measured transfer cost outweighs
 the benefit of moving services off the MSX.
 
@@ -228,9 +228,9 @@ overhead arithmetic. The mailbox's three handshake byte fixtures were decoded
 and their CRCs checked with both a bitwise implementation of the specified
 algorithm and Python's `zlib.crc32`.
 
-These are document/format consistency checks. No protocol state-machine test,
-Z80/Pico build, stack measurement, network runtime test or electrical
-qualification was performed in this step. The acceptance cases above and in
-the mailbox proposal remain work for the prototype.
+Those were document/format consistency checks. The subsequent
+[model qualification](MAILBOX-MODEL.md) adds executable transport tests, but
+does not supply a Z80/Pico build, stack measurement, network runtime test or
+electrical qualification. Those acceptance cases remain work for the prototype.
 
 [pico]: https://www.raspberrypi.com/products/raspberry-pi-pico/

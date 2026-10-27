@@ -15,8 +15,9 @@
 - [x] Draft the [command-coprocessor/direct-parallel resource comparison](RESOURCE-BUDGET.md),
   distinguishing source evidence, allocation targets and unmeasured costs.
 - [x] Draft [bounded transport, backpressure, response replay and reset recovery](MAILBOX-PROTOCOL.md).
-- [ ] Validate the draft with a host-side protocol model and fake socket backend:
-  malformed frames, credit boundaries, duplicate side effects, ACK and reset races.
+- [x] Validate the draft's transport with a [host-side model and fake socket backend](MAILBOX-MODEL.md):
+  malformed frames, credit boundaries, duplicate side effects, ACK and reset races;
+  include atomic TCP enqueue and whole-datagram UDP receive/replay fixtures.
 - [ ] Build minimal Z80/Pico and direct-access software to replace ROM/RAM
   allocations with linked maps and stack measurements before architecture selection.
 - [ ] Resolve source reuse/licensing and define adaptations for the reviewed
