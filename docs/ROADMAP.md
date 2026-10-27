@@ -1,5 +1,31 @@
 # Development roadmap
 
+## Next session: firmware foundation
+
+Planning note recorded on **2026-10-28**: resume this work on the **main
+development machine later this week** (week of 2026-10-26). Firmware
+implementation is deferred until that session.
+
+Handoff baseline: commit `6397825` on `main` contains the mailbox model,
+conformance fixtures and documentation. All 51 model tests passed in the last
+validation. On the main machine, update the checkout and verify that baseline
+with `python3 -m unittest discover -s tests -v` before starting firmware work.
+
+Planned scope, starting with the Z80 UNAPI ROM:
+
+- [ ] Pin the Z80/Pico build tools and SDK versions; add reproducible build commands.
+- [ ] Implement the ROM skeleton: boot initialization, `TCP/IP` discovery,
+  version information, truthful capabilities and defined unsupported-call behavior.
+- [ ] Port mailbox framing, replay and reset handling to C with a fake backend,
+  and build a Pico firmware skeleton using that core.
+- [ ] Run the existing wire/conformance fixtures against C, check ROM discovery
+  in an emulator, and publish linked ROM/RAM size reports. Record stack usage
+  where runtime measurement is available and leave unmeasured budgets explicit.
+
+Expected result: a buildable Z80 ROM and Pico skeleton with test evidence and
+initial resource measurements. Physical mailbox circuitry, W5100S timing and
+the final Pico/direct-parallel architecture decision remain separate gates.
+
 ## 0. Reference baseline
 
 - [x] Inspect Net4CPC's interface, schematic structure and BOM.
